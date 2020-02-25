@@ -19,13 +19,10 @@ const array_key_found_color = [64, 191, 230];
 const array_colors = [array_not_search_color, array_current_search_color, array_searched_color, array_key_found_color];
 const text_color = [255, 255, 255];
 
-const box_size = 85;
-const min_x_offset = 100;
-const min_y_offset = 100;
-
-let x_offset;
-let y_offset;
-let my_canvas;
+const min_size = 45;
+let box_size;
+let min_x_offset;
+let min_y_offset;
 
 let time_step = 100;
 let time_deposit = 0;
@@ -39,7 +36,7 @@ function preload() {
 }
 
 function setup() {
-    my_canvas = createCanvas(0.95 * window.innerWidth, 0.95 * window.innerHeight);
+    my_canvas = createCanvas(0.9 * window.innerWidth, 0.9 * window.innerHeight);
 
     reset_settings();
 
@@ -146,6 +143,12 @@ function windowResized() {
 }
 
 function calculate_offset() {
+    box_size = 0.06 * window.innerWidth;
+    if (box_size < min_size) {
+        box_size = min_size;
+    }
+    min_x_offset = 0.07 * window.innerWidth;
+    min_y_offset = 0.156 * window.innerHeight;
     if (min_x_offset + my_array.length * box_size > width - min_x_offset) {
         x_offset = min_x_offset;
     } else {
