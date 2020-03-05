@@ -7,6 +7,7 @@ let min_element;
 let my_canvas;
 let color_stack = [];
 let array_color = [];
+let buffer_color = [];
 let generated_colors = [];
 
 const min_box_height = 100;
@@ -19,10 +20,13 @@ let x_offset;
 let y_offset;
 
 let iterator;
-let time_step = 500;
+let time_step = 200;
 let time_deposit = 0;
 
 let reset_btn;
+let pause_btn;
+
+let play = true;
 
 function preload() {
 
@@ -31,9 +35,15 @@ function preload() {
 function setup() {
     my_canvas = createCanvas(window.innerWidth, 0.9 * window.innerHeight);
     init();
-
+    /*textAlign(CENTER, CENTER);
+    textSize(Math.round(box_width / 3));*/
     reset_btn = createButton('Reset');
     reset_btn.mousePressed(init);
+
+    pause_btn = createButton('Pause');
+    pause_btn.mousePressed(() => {
+        play = !play;
+    })
 }
 
 function draw() {
@@ -49,6 +59,11 @@ function draw() {
     let index_x = 0;
     let index_y = 0;
     for (let i = 0; i < array_size; i++) {
+        // Code for debugging
+        // if (array_color[i][0] + array_color[i][1] + array_color[i][2] < 200 || array_color[i] == undefined) {
+        //     console.log('black');
+        //     console.log(array_color[i]);
+        // }
         fill(array_color[i][0], array_color[i][1], array_color[i][2]);
         const current_box_height = (my_array[i] / max_num) * box_height;
         let x = (x_offset) + box_width * index_x;
@@ -62,13 +77,20 @@ function draw() {
         const y = y_offset + index_y * box_height + (box_height - current_box_height);
         rect(x, y, box_width, current_box_height);
 
+        /*fill(255, 255, 255);
+        text(my_array[i], x, y + current_box_height - box_width, box_width, box_width);
+        */
         index_x += 1;
     }
 
     index_x = 0;
     index_y += 1;
     for (let i = 0; i < array_size; i++) {
-        fill(54, 158, 82);
+        if (buffer_color[i]) {
+            fill(buffer_color[i][0], buffer_color[i][1], buffer_color[i][2], 150);
+        } else {
+            fill(0, 0, 0);
+        }
         let current_box_height = 0;
         if (buffer_array[i]) {
             current_box_height = (buffer_array[i] / max_num) * box_height;
@@ -87,11 +109,13 @@ function draw() {
         index_x += 1;
     }
 
-    if (time_deposit >= time_step) {
-        const val = iterator.next();
-        time_deposit -= time_step;
-    } else {
-        time_deposit += deltaTime;
+    if (play == true) {
+        if (time_deposit >= time_step) {
+            const val = iterator.next();
+            time_deposit -= time_step;
+        } else {
+            time_deposit += deltaTime;
+        }
     }
 }
 
@@ -171,14 +195,19 @@ function* merge(arr, p, q, r) {
     left.push(Infinity);
     right.push(Infinity);
 
+    let r_color = color_stack.pop();
+    let l_color = color_stack.pop();
+
     let m = 0;
     let n = 0;
     for (let i = p; i <= r; i++) {
         if (left[m] < right[n]) {
             buffer_array[i] = left[m];
+            buffer_color[i] = l_color;
             m += 1;
         } else {
             buffer_array[i] = right[n];
+            buffer_color[i] = r_color;
             n += 1;
         }
         yield;
@@ -186,26 +215,25 @@ function* merge(arr, p, q, r) {
 
     for (let i = p; i <= r; i++) {
         arr[i] = buffer_array[i];
+        array_color[i] = buffer_color[i];
         yield;
     }
 
-    color_stack.pop();
-    color_stack.pop();
+    for (let i = p; i <= r; i++) {
+        buffer_array[i] = undefined;
+    }
+    yield;
 
     let prev_color = color_stack[color_stack.length - 1];
     for (let i = p; i <= r; i++) {
         array_color[i] = prev_color;
     }
     yield;
-
-    for (let i = p; i <= r; i++) {
-        buffer_array[i] = undefined;
-    }
-    yield;
 }
 
 function init() {
     buffer_array = [];
+    buffer_color = [];
     color_stack = [];
     my_array = [];
     array_color = [];
@@ -220,9 +248,9 @@ function init() {
 
 
 function generate_all_random_colors(n) {
-    random_list = [];
+    let random_list = [];
     for (let i = 0; i < n;) {
-        rnd = Math.random();
+        let rnd = Math.random();
         let different = true;
         for (let j = i - 1; j >= 0; j--) {
             if (Math.round(rnd * 255) == Math.round(random_list[j] * 255)) {
@@ -236,7 +264,7 @@ function generate_all_random_colors(n) {
         }
     }
 
-    colors = [];
+    let colors = [];
     for (let i = 0; i < n; i++) {
         colors[i] = generate_random_color(random_list[i]);
     }
@@ -253,7 +281,7 @@ function generate_random_color(rnd) {
 }
 
 function hsv_to_rgb(h, s, v) {
-    const h_i = Math.round(h * 6);
+    const h_i = Math.floor(h * 6);
     const f = h * 6 - h_i;
     const p = v * (1 - s);
     const q = v * (1 - f * s);
