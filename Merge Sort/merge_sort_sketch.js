@@ -34,6 +34,7 @@ function preload() {
 
 function setup() {
     my_canvas = createCanvas(window.innerWidth, 0.9 * window.innerHeight);
+    textStyle(BOLD);
     init();
     /*textAlign(CENTER, CENTER);
     textSize(Math.round(box_width / 3));*/
@@ -43,7 +44,7 @@ function setup() {
     pause_btn = createButton('Pause');
     pause_btn.mousePressed(() => {
         play = !play;
-    })
+    });
 }
 
 function draw() {
@@ -54,7 +55,6 @@ function draw() {
 
     // fill(100, 100, 100);
     // rect(min_x_offset, min_y_offset, width - 2 * min_x_offset, height / 2 - 2 * min_y_offset);
-    stroke(255, 255, 255);
 
     let index_x = 0;
     let index_y = 0;
@@ -75,14 +75,17 @@ function draw() {
         }
 
         const y = y_offset + index_y * box_height + (box_height - current_box_height);
+        stroke(255, 255, 255);
         rect(x, y, box_width, current_box_height);
 
-        /*fill(255, 255, 255);
-        text(my_array[i], x, y + current_box_height - box_width, box_width, box_width);
-        */
+        noStroke();
+        fill(75, 75, 75);
+        text(my_array[i] + '', x, y + current_box_height - 0.9 * box_width, box_width, 0.9 * box_width);
+
         index_x += 1;
     }
 
+    stroke(255, 255, 255);
     index_x = 0;
     index_y += 1;
     for (let i = 0; i < array_size; i++) {
@@ -136,7 +139,9 @@ function calc_min_element() {
 
 function windowResized() {
     resizeCanvas(window.innerWidth, 0.9 * window.innerHeight);
+    calc_min_element();
     calc_offset_box_size();
+    textSize(0.5 * box_width);
 }
 
 function calc_offset_box_size() {
@@ -244,6 +249,8 @@ function init() {
     iterator.next();
     calc_min_element();
     calc_offset_box_size();
+    textSize(0.5 * box_width);
+    textAlign(CENTER, CENTER);
 }
 
 
